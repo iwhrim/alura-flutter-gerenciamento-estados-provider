@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_state_management/components/editor.dart';
+import 'package:flutter_state_management/models/balance.dart';
 import 'package:flutter_state_management/models/transaction.dart';
+import 'package:flutter_state_management/models/transactions.dart';
+import 'package:provider/provider.dart';
 
 const _titleAppBar = 'Criando Transferência';
 
@@ -12,14 +15,7 @@ const _hintAccountNumberField = '0000';
 
 const _textConfirmButton = 'Confirmar';
 
-class TransactionForm extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return TransactionFormState();
-  }
-}
-
-class TransactionFormState extends State<TransactionForm> {
+class TransactionForm extends StatelessWidget {
   final TextEditingController _controllerAccountNumberField =
       TextEditingController();
   final TextEditingController _controllerValueField = TextEditingController();
@@ -57,9 +53,26 @@ class TransactionFormState extends State<TransactionForm> {
   void _createTransaction(BuildContext context) {
     final int accountNumber = int.tryParse(_controllerAccountNumberField.text);
     final double value = double.tryParse(_controllerValueField.text);
-    if (accountNumber != null && value != null) {
-      final createdTransaction = Transaction(value, accountNumber);
-      Navigator.pop(context, createdTransaction);
+    final isValid = _validateTransaction(context, accountNumber, value);
+    if (isValid) {
+      final newTransaction = Transaction(value, accountNumber);
+      _refreshState(context, newTransaction, value);
+      Navigator.pop(context);
     }
   }
+
+  _validateTransaction(context, accountNumber, value) {
+    final _hasEnoughBalance = value <=
+        Provider.of<Balance>(
+          context,
+          listen: false,
+        ).value;
+    return accountNumber != null && value != null && _hasEnoughBalance;
+  }
+
+  _refreshState(context, newTransaction, value) {
+    Provider.of<Transactions>(context, listen: false).add(newTransaction);
+    Provider.of<Balance>(context, listen: false).draw(value);
+  }
+
 }

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_state_management/models/balance.dart';
+import 'package:flutter_state_management/models/transactions.dart';
 import 'package:flutter_state_management/screens/dashboard.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/transaction/list.dart';
 
 void main() => runApp(
-      ChangeNotifierProvider(
-        create: (context) => Balance(0),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => Balance(0)),
+          ChangeNotifierProvider(create: (context) => Transactions()),
+        ],
         child: BytebankApp(),
-      )
+      ),
     );
 
 class BytebankApp extends StatelessWidget {
